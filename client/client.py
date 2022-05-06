@@ -17,4 +17,3 @@ class Client:
         response = server.recvfrom(BUFFER_SIZE)
         message = response[0].decode("utf-8")
         print(f"📨 Received response: {message}")
-        server.close()
