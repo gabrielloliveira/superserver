@@ -1,5 +1,6 @@
 import socket
 import threading
+from ast import literal_eval
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -49,9 +50,21 @@ class Server:
         else:
             self.subprocess_request(message, client_address)
 
+    @staticmethod
+    def matrices(message):
+        """Get matrices from message."""
+        if isinstance(message, bytes):
+            message = message.decode("utf-8")
+        matrices = message.lower().split("x")
+        matrices = [literal_eval(m.strip()) for m in matrices]
+        return matrices
+
     def send_response(self, message, client_address, from_thread=False):
         """Send a response to the client."""
         # TODO: Calculate product from matrix
+
+        matrices = self.matrices(message)
+
         response = "Hello from Server".encode("utf-8")
         self.sock.sendto(response, client_address)
         if from_thread:

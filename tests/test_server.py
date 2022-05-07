@@ -48,3 +48,18 @@ def test_server_send_response(mock_send_response, mock_recvfrom):
     assert mock_send_response.call_args.args[1] is b"test"
     assert mock_send_response.call_args.args[2] == ("123", 123)
     assert mock_send_response.call_args.kwargs["from_thread"] is True
+
+
+def test_matrices():
+    """
+    Test matrices
+    """
+    server = Server(num_threads=1)
+    matrices = "[[1, 2, 3], [4, 5, 6], [7, 8, 9]] x [[1, 2, 3], [4, 5, 6], [7, 8, 9]]"
+    matrices = server.matrices(matrices)
+    expected_matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+    assert isinstance(matrices, list)
+    assert len(matrices) == 2
+    assert matrices[0] == expected_matrix
+    assert matrices[1] == expected_matrix
