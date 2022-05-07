@@ -24,19 +24,23 @@ class Server:
         sock.bind((self.host, self.port))
         return sock
 
+    def close(self):
+        """Close the server."""
+        self.sock.close()
+
     def run(self):
         """Run the server."""
-        self.listen()
-
-    def listen(self):
-        """Listen for connections."""
         print(f"🚀 Starting server on port {self.port}...")
         print(f"🚀 Number of threads = {self.num_threads}...")
         while True:
-            print("🚀 Waiting for connections...")
-            message, client_address = self.sock.recvfrom(BUFFER_SIZE)
-            print("🚀 Received connection...", client_address)
-            self.handle_request(message, client_address)
+            self.listen()
+
+    def listen(self):
+        """Listen for connections."""
+        print("🚀 Waiting for connections...")
+        message, client_address = self.sock.recvfrom(BUFFER_SIZE)
+        print("🚀 Received connection...", client_address)
+        self.handle_request(message, client_address)
 
     def handle_request(self, message, client_address):
         """Handle a request."""
