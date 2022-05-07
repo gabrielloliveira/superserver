@@ -1,6 +1,9 @@
 import socket
 import threading
 from ast import literal_eval
+from functools import reduce
+
+import numpy as np
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -59,13 +62,19 @@ class Server:
         matrices = [literal_eval(m.strip()) for m in matrices]
         return matrices
 
+    @staticmethod
+    def calculate_product(matrices):
+        """Calculate product of matrices."""
+        return reduce(np.dot, matrices)
+
     def send_response(self, message, client_address, from_thread=False):
         """Send a response to the client."""
         # TODO: Calculate product from matrix
 
         matrices = self.matrices(message)
+        product = self.calculate_product(matrices)
 
-        response = "Hello from Server".encode("utf-8")
+        response = str(product).encode("utf-8")
         self.sock.sendto(response, client_address)
         if from_thread:
             self.threads -= 1

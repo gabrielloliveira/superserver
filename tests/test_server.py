@@ -1,6 +1,7 @@
 import socket
 from unittest import mock
 
+import numpy as np
 import pytest
 
 from server.server import Server
@@ -70,3 +71,17 @@ def test_matrices(message, expected_matrix):
     assert len(matrices) == 2
     assert matrices[0] == expected_matrix
     assert matrices[1] == expected_matrix
+
+
+def test_calculate_product():
+    """
+    Test matrices
+    """
+    matrices = [[[2, 3], [3, 4]], [[5, 6], [6, 7]], [[2, 3], [3, 4]]]
+    expected_result_mult = [[155, 216], [216, 301]]
+
+    server = Server(num_threads=1)
+    result_mult = server.calculate_product(matrices)
+    server.close()
+    assert len(result_mult) == 2
+    np.testing.assert_array_equal(result_mult, expected_result_mult)
