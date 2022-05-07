@@ -10,13 +10,19 @@ BUFFER_SIZE = 1024 * 10
 
 
 class Server:
-    def __init__(self, num_threads: int, port: int = PORT):
+    def __init__(self, num_threads: int, port: int = PORT, is_subprocess: bool = False):
         self.host = HOST
         self.port = port
         self.num_threads = num_threads
-        self.sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.sock.bind((self.host, self.port))
+        self.sock = self.create_socket()
         self.threads = 0
+        self.is_subprocess = is_subprocess
+
+    def create_socket(self):
+        """Create a socket."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.host, self.port))
+        return sock
 
     def run(self):
         """Run the server."""
