@@ -25,6 +25,7 @@ class Server:
     def listen(self):
         """Listen for connections."""
         print(f"🚀 Starting server on port {self.port}...")
+        print(f"🚀 Number of threads = {self.num_threads}...")
         while True:
             print("🚀 Waiting for connections...")
             message, client_address = self.sock.recvfrom(BUFFER_SIZE)
@@ -38,18 +39,21 @@ class Server:
         else:
             self.subprocess_request(message, client_address)
 
-    def send_response(self, message, client_address):
+    def send_response(self, message, client_address, from_thread=False):
         """Send a response to the client."""
+        # TODO: Calculate product from matrix
         response = "Hello from Server".encode("utf-8")
         self.sock.sendto(response, client_address)
+        if from_thread:
+            self.threads -= 1
 
     def thread_request(self, message, client_address):
         """Handle request in a thread."""
-        t = threading.Thread(target=self.send_response, args=(message, client_address))
+        t = threading.Thread(target=self.send_response, args=(message, client_address), kwargs={"from_thread": True})
         t.start()
         self.threads += 1
 
     def subprocess_request(self, message, client_address):
         """Handle request in a subprocess."""
         # TODO: Send request to available subprocess or create a new subprocess
-        pass
+        raise NotImplementedError("Subprocess not implemented yet.")
