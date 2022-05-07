@@ -65,7 +65,7 @@ def test_matrices(message, expected_matrix):
     """
     server = Server(num_threads=1)
     matrices = server.matrices(message)
-
+    server.close()
     assert isinstance(matrices, list)
     assert len(matrices) == 2
     assert matrices[0] == expected_matrix
