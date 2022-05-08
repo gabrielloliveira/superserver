@@ -1,8 +1,9 @@
+import json
 import socket
 import subprocess
 import threading
 
-from server import BUFFER_SIZE
+from server import BUFFER_SIZE, SERVER_ADDRESS_TCP
 from server.base import BaseServer
 from server.helpers import calculate_product, matrices_from_message
 
@@ -11,6 +12,7 @@ class Server(BaseServer):
     def __init__(self, **kwargs):
         """Initialize the server."""
         super().__init__(**kwargs)
+        self.sock_partner = self.create_socket_for_partner()
         self.queue_available_servers = []
         self.queue_unavailable_servers = []
 
@@ -26,13 +28,42 @@ class Server(BaseServer):
         sock.bind((self.host, self.port))
         return sock
 
+    @staticmethod
+    def create_socket_for_partner():
+        """Create a TCP socket for the partner."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(SERVER_ADDRESS_TCP)
+        sock.listen(1)
+        return sock
+
     def listen(self):
         """Listen for connections."""
+
+        t = threading.Thread(target=self.listener_to_register_partner)
+        t.start()
+
         while True:
             print("🚀 Waiting for connections...")
             message, client_address = self.sock.recvfrom(BUFFER_SIZE)
             print("🚀 Received connection...", client_address)
             self.handle_request(message, client_address)
+
+    def listener_to_register_partner(self):
+        """Listen for partner."""
+        while True:
+            conn, client_address = self.sock_partner.accept()
+            print("✅ Received partner solicitation...", client_address)
+            message = conn.recv(BUFFER_SIZE)
+            message = message.decode("utf-8")
+            try:
+                self.register_partner(message)
+            except Exception as e:
+                conn.send(str(e).encode())
+
+    def register_partner(self, message):
+        """Listen for TCP connection."""
+        print(f"✅ {message} ...")
+        self.queue_available_servers.append(json.loads(message))
 
     def handle_request(self, message, client_address):
         """Handle a request."""

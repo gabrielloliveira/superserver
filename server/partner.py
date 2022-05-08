@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from server import HOST, PORT, BUFFER_SIZE
+from server import HOST, PORT, BUFFER_SIZE, SERVER_ADDRESS_TCP
 from server.base import BaseServer
 from server.helpers import calculate_product, matrices_from_message
 
@@ -49,9 +49,16 @@ class PartnerServer(BaseServer):
                 pass
         raise OSError("All ports from {} to {} are in use. Please close a port.".format(initial, final))
 
+    def register_to_server(self):
+        """Register to server via TCP."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(SERVER_ADDRESS_TCP)
+        s.send(str(self.info).encode())
+        s.close()
+
     def listen(self):
         """Listen for connections."""
-        # TODO: Register the server in the parent server queue
+        self.register_to_server()
         print("🚀 Waiting for connections on TYPE MODE TCP...")
         self.sock.listen()
         while True:
