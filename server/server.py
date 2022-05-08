@@ -16,33 +16,13 @@ BUFFER_SIZE = 1024 * 10
 class Server:
     def __init__(self, num_threads: int, is_subprocess: bool = False):
         self.host = HOST
+        self.port = PORT
         self.is_subprocess = is_subprocess
-        self.select_type_serve()
+        self.sock = self.create_sock()
         self.num_threads = num_threads
         self.threads = 0
         self.QUEUE_AVAILABLE_SERVERS = []
         self.QUEUE_UNAVAILABLE_SERVERS = []
-
-    def select_type_serve(self):
-        """Select type of serve."""
-        if not self.is_subprocess:
-            self.port = PORT
-            self.sock = self.create_socket_upd()
-        else:
-            self.port = self.get_port()
-            self.sock = self.create_socket_tcp()
-
-    def create_socket_upd(self):
-        """Create a socket."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.host, self.port))
-        return sock
-
-    def create_socket_tcp(self):
-        """Create a socket."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((self.host, self.port))
-        return sock
 
     def close(self):
         """Close the server."""
@@ -52,11 +32,45 @@ class Server:
         """Run the server."""
         print(f"🚀 Starting server on port {self.port}...")
         print(f"🚀 Number of threads = {self.num_threads}...")
-        if not self.is_subprocess:
+        if self.is_subprocess:
+            self.listen_tcp()
+        else:
             while True:
                 self.listen_udp()
-        else:
-            self.listen_tcp()
+
+    def create_sock(self):
+        """Create a socket."""
+        if self.is_subprocess:
+            return self.create_socket_tcp()
+        return self.create_socket_udp()
+
+    def create_socket_udp(self):
+        """Create a UDP socket."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.host, self.port))
+        return sock
+
+    def create_socket_tcp(self):
+        """Create a TCP socket."""
+        self.port = self.available_port()
+        print(f"🚀 Port {self.port} is available...")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((self.host, self.port))
+        return sock
+
+    def available_port(self):
+        """Get available port."""
+        initial = 8000
+        final = 65535
+        for port in range(initial, final):
+            try:
+                s = socket.socket()
+                s.bind((self.host, port))
+                s.close()
+                return port
+            except OSError:
+                pass
+        raise OSError("All ports from {} to {} are in use. Please close a port.".format(initial, final))
 
     def listen_udp(self):
         """Listen for connections."""
@@ -68,20 +82,6 @@ class Server:
     def listen_tcp(self):
         """Listen for connections."""
         pass
-
-    def get_port(self):
-        """Get a port."""
-        port = random.randint(8000, 65535)
-        if self.test_port(random.randint(8000, 65535)):
-            return port
-        else:
-            return self.get_port()
-
-    def test_port(self, port):
-        """Test if port is available."""
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        return s.connect_ex((self.host, self.port)) == 0
 
     def handle_request(self, message, client_address):
         """Handle a request."""

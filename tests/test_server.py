@@ -75,7 +75,7 @@ def test_matrices(message, expected_matrix):
 
 def test_calculate_product():
     """
-    Test matrices
+    Test calculate product from matrices
     """
     matrices = [[[2, 3], [3, 4]], [[5, 6], [6, 7]], [[2, 3], [3, 4]]]
     expected_result_mult = [[155, 216], [216, 301]]
@@ -83,5 +83,17 @@ def test_calculate_product():
     server = Server(num_threads=1)
     result_mult = server.calculate_product(matrices)
     server.close()
-    assert len(result_mult) == 2
     np.testing.assert_array_equal(result_mult, expected_result_mult)
+    assert len(result_mult) == 2
+
+
+@mock.patch("server.server.Server.listen_tcp", return_value=None, autospec=True)
+def test_subprocess_initialization(mock_listen_tcp):
+    """
+    Test subprocess initialization
+    """
+    server = Server(num_threads=1, is_subprocess=True)
+    server.run()
+    server.close()
+    assert server.is_subprocess is True
+    assert mock_listen_tcp.called
