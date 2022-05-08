@@ -1,5 +1,5 @@
 import socket
-
+import time
 
 SERVER_ADDRESS = ("127.0.0.1", 8080)
 BUFFER_SIZE = 1024 * 10
@@ -11,12 +11,14 @@ class Client:
 
     def send_message(self, message):
         print(f"📩 Sending message: {message}")
+        start_time = time.time()
         message = message.encode("utf-8")
         server = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         server.sendto(message, self.server_address)
         response = server.recvfrom(BUFFER_SIZE)
         message = response[0].decode("utf-8")
-        print(f"📨 Received response: {message}")
+        final_time = time.time() - start_time
+        print(f"📨 Received response: {message} in {final_time} seconds")
 
     def send_message_on_tcp(self, message, port=8080):
         print(f"📩 Sending message with TCP CONNECTION: {message}")

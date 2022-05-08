@@ -1,7 +1,7 @@
-import json
 import socket
 import subprocess
 import threading
+import time
 from ast import literal_eval
 
 from server import BUFFER_SIZE, SERVER_ADDRESS_TCP
@@ -124,15 +124,25 @@ class Server(BaseServer):
     def subprocess_request(self, message, client_address):
         """Handle request in a subprocess."""
         available_server = self.available_partner()
-        self.queue_unavailable_server.append(available_server)
 
         print(f"📪 Sending {message} to available partner on PORT {available_server['port']} ...")
 
+        t = threading.Thread(target=self.send_subprocess_response, args=(available_server, message, client_address))
+        t.start()
+
+    def send_subprocess_response(self, available_server, message, client_address):
+        self.queue_unavailable_server.append(available_server)
+
+        start_time = time.time()
         response = self.request_to_partner(available_server, message)
+        total_time = time.time() - start_time
+
         print(f"📩 Sending response to client ...")
         self.sock.sendto(response, client_address)
         self.queue_unavailable_server.remove(available_server)
-        self.queue_available_servers.append(available_server)
+        performance = self.calculate_performance(message, total_time)
+        print(f"📊 Performance of partner {available_server['port']}: {performance} ...")
+        self.update_queue_available_servers(available_server, performance)
 
     def request_to_partner(self, available_server, message):
         """Send request to partner."""
@@ -145,3 +155,17 @@ class Server(BaseServer):
         response = server.recv(BUFFER_SIZE)
         print(f"📨 Received from partner response: {response.decode('utf-8')}")
         return response
+
+    @staticmethod
+    def calculate_performance(message, total_time):
+        matrices = matrices_from_message(message)
+        size_processing = len(matrices[0]) * len(matrices[1][0])
+        return total_time / size_processing
+
+    def update_queue_available_servers(self, available_server, performance):
+        """Update queue available servers."""
+        available_server["performance_rate"] = performance
+        self.queue_available_servers.append(available_server)
+        print(f"🔁️ Updating queue available servers: {self.queue_available_servers}")
+        sorted(self.queue_available_servers, key=lambda row: row["performance_rate"], reverse=True)
+        print(f"✅️ Updated queue available servers: {self.queue_available_servers}")

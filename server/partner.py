@@ -59,7 +59,6 @@ class PartnerServer(BaseServer):
     def listen(self):
         """Listen for connections."""
         self.register_to_server()
-        print("🚀 Waiting for connections on TYPE MODE TCP...")
         self.sock.listen()
         while True:
             conn, client_address = self.sock.accept()
@@ -95,6 +94,6 @@ class PartnerServer(BaseServer):
 
     def thread_request(self, message, connection):
         """Handle request in a thread."""
+        self.threads += 1
         t = threading.Thread(target=self.send_response_thread, args=(message, connection), kwargs={"from_thread": True})
         t.start()
-        self.threads += 1
