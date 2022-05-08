@@ -37,13 +37,6 @@ class PartnerServer(BaseServer):
 
     def available_port(self):
         """Get available port."""
-        try:
-            s = socket.socket()
-            s.bind((self.host, self.port))
-            s.close()
-            return self.port
-        except OSError:
-            pass
         initial = 8000
         final = 65535
         for port in range(initial, final):
@@ -61,38 +54,40 @@ class PartnerServer(BaseServer):
         # TODO: Register the server in the parent server queue
         print("🚀 Waiting for connections on TYPE MODE TCP...")
         self.sock.listen()
-        conn, client_address = self.sock.accept()
-        with conn:
+        while True:
+            conn, client_address = self.sock.accept()
             print("🚀 Received connection...", client_address)
-            while True:
-                message = conn.recv(BUFFER_SIZE)
-                if not message:
-                    break
-                self.handle_request(message, client_address)
+            message = conn.recv(BUFFER_SIZE)
+            message = message.decode("utf-8")
+            try:
+                self.handle_request(message, conn)
+            except Exception as e:
+                conn.send(str(e).encode())
 
-    def handle_request(self, message, client_address):
+    def handle_request(self, message, connection):
         """Handle a request."""
         if self.threads < self.max_threads:
-            return self.thread_request(message, client_address)
+            return self.thread_request(message, connection)
         raise Exception("Too many threads running...")
 
-    def send_response_thread(self, message, client_address, from_thread=False):
+    def send_response_thread(self, message, connection, from_thread=False):
         """Send a response to the client."""
         print(f"📩 Received {message} ...")
         print("🚀 Sending response...")
         try:
             matrices = matrices_from_message(message)
             product = calculate_product(matrices)
-        except ValueError as e:
+        except Exception:
             product = f"The matrices is not valid."
 
         response = str(product).encode("utf-8")
-        self.sock.sendall(response)
+        connection.send(response)
+        connection.close()
         if from_thread:
             self.threads -= 1
 
-    def thread_request(self, message, client_address):
+    def thread_request(self, message, connection):
         """Handle request in a thread."""
-        t = threading.Thread(target=self.send_response_thread, args=(message, client_address), kwargs={"from_thread": True})
+        t = threading.Thread(target=self.send_response_thread, args=(message, connection), kwargs={"from_thread": True})
         t.start()
         self.threads += 1

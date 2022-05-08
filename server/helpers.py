@@ -4,7 +4,7 @@ from functools import reduce
 import numpy as np
 
 
-def matrices_from_message(message: str):
+def matrices_from_message(message):
     """Get matrices from message."""
     if isinstance(message, bytes):
         message = message.decode("utf-8")
