@@ -36,6 +36,47 @@ class Server:
             listen_type_connection = self.listen_tcp
         listen_type_connection()
 
+    def create_sock(self):
+        """Create a socket."""
+        if self.partner:
+            return self.create_socket_tcp()
+        return self.create_socket_udp()
+
+    def create_socket_udp(self):
+        """Create a UDP socket."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.host, self.port))
+        return sock
+
+    def create_socket_tcp(self):
+        """Create a TCP socket."""
+        self.port = self.available_port()
+        print(f"🚀 Port {self.port} is available...")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((self.host, self.port))
+        return sock
+
+    def available_port(self):
+        """Get available port."""
+        try:
+            s = socket.socket()
+            s.bind((self.host, self.port))
+            s.close()
+            return self.port
+        except OSError:
+            pass
+        initial = 8000
+        final = 65535
+        for port in range(initial, final):
+            try:
+                s = socket.socket()
+                s.bind((self.host, port))
+                s.close()
+                return port
+            except OSError:
+                pass
+        raise OSError("All ports from {} to {} are in use. Please close a port.".format(initial, final))
+
     def listen_udp(self):
         """Listen for connections."""
         while True:
