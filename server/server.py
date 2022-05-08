@@ -2,6 +2,7 @@ import json
 import socket
 import subprocess
 import threading
+from ast import literal_eval
 
 from server import BUFFER_SIZE, SERVER_ADDRESS_TCP
 from server.base import BaseServer
@@ -14,7 +15,7 @@ class Server(BaseServer):
         super().__init__(**kwargs)
         self.sock_partner = self.create_socket_for_partner()
         self.queue_available_servers = []
-        self.queue_unavailable_servers = []
+        self.queue_unavailable_server = []
 
     def run(self):
         """Run the server."""
@@ -62,8 +63,10 @@ class Server(BaseServer):
 
     def register_partner(self, message):
         """Listen for TCP connection."""
-        print(f"✅ {message} ...")
-        self.queue_available_servers.append(json.loads(message))
+        print(f"✅ Registered {message} ...")
+        message = literal_eval(message)
+        self.queue_available_servers.append(message)
+        print(f"✅ Queue available servers: {self.queue_available_servers} ...")
 
     def handle_request(self, message, client_address):
         """Handle a request."""
@@ -102,34 +105,40 @@ class Server(BaseServer):
     @staticmethod
     def create_partner():
         """Create a subprocess."""
-        subprocess.run(["python", "-m", "server", "--partner"])
+        subprocess.Popen(["python", "-m", "server", "--partner"])
 
     def available_partner(self):
         """Get available partner."""
         if not self.queue_available_servers:
             self.create_partner()
+            print("🤝 Created a new partner...")
 
         # Wait for partner ready and register itself
+        print("👀 Waiting for available partner...")
         len_available_partner = 0
         while len_available_partner == 0:
             len_available_partner = len(self.queue_available_servers)
+        print("🤝 Partner available...")
         return self.queue_available_servers.pop(0)
 
     def subprocess_request(self, message, client_address):
         """Handle request in a subprocess."""
         available_server = self.available_partner()
-        self.queue_unavailable_servers.append(available_server)
+        self.queue_unavailable_server.append(available_server)
 
         print(f"📪 Sending {message} to available partner on PORT {available_server['port']} ...")
 
         response = self.request_to_partner(available_server, message)
         print(f"📩 Sending response to client ...")
         self.sock.sendto(response, client_address)
+        self.queue_unavailable_server.remove(available_server)
+        self.queue_available_servers.append(available_server)
 
     def request_to_partner(self, available_server, message):
         """Send request to partner."""
         print(f"📩 Sending message with TCP CONNECTION to partner at port {available_server['port']}")
-        message = message.encode("utf-8")
+        if isinstance(message, str):
+            message = message.encode("utf-8")
         server = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
         server.connect((self.host, available_server["port"]))
         server.send(message)

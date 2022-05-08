@@ -63,7 +63,7 @@ class PartnerServer(BaseServer):
         self.sock.listen()
         while True:
             conn, client_address = self.sock.accept()
-            print("🚀 Received connection...", client_address)
+            print("‍💼 Received connection from SERVER...", client_address)
             message = conn.recv(BUFFER_SIZE)
             message = message.decode("utf-8")
             try:
@@ -80,7 +80,7 @@ class PartnerServer(BaseServer):
     def send_response_thread(self, message, connection, from_thread=False):
         """Send a response to the client."""
         print(f"📩 Received {message} ...")
-        print("🚀 Sending response...")
+        print("🚀 Sending response to SERVER...")
         try:
             matrices = matrices_from_message(message)
             product = calculate_product(matrices)
