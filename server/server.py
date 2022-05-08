@@ -11,12 +11,12 @@ BUFFER_SIZE = 1024 * 10
 
 
 class Server:
-    def __init__(self, num_threads: int, is_subprocess: bool = False, host: str = HOST, port: int = PORT):
+    def __init__(self, threads: int, partner: bool = False, host: str = HOST, port: int = PORT):
         self.host = host
         self.port = port
-        self.is_subprocess = is_subprocess
+        self.partner = partner
         self.sock = self.create_sock()
-        self.num_threads = num_threads
+        self.num_threads = threads
         self.threads = 0
         self.queue_available_servers = []
         self.queue_unavailable_servers = []
@@ -27,19 +27,19 @@ class Server:
 
     def run(self):
         """Run the server."""
-        if self.is_subprocess:
-            print("🚀 Starting server on mode subprocess...")
+        if self.partner:
+            print("🚀 Starting server on mode partner...")
         print(f"🚀 Starting server on port {self.port}...")
         print(f"🚀 Number of threads = {self.num_threads}...")
         listen_type_connection = self.listen_udp
-        if self.is_subprocess:
+        if self.partner:
             listen_type_connection = self.listen_tcp
         while True:
             listen_type_connection()
 
     def create_sock(self):
         """Create a socket."""
-        if self.is_subprocess:
+        if self.partner:
             return self.create_socket_tcp()
         return self.create_socket_udp()
 
@@ -137,7 +137,7 @@ class Server:
         """Create a subprocess."""
         available_port = self.available_port()
         threads = 1
-        subprocess.run(["python", "-m", "server", "-t", str(threads), "-p", str(available_port), "--partner"])
+        subprocess.run(["python", "-m", "server", "--partner"])
         self.insert_partner_in_queue(available_port, threads)
 
     def available_partner(self):
@@ -148,22 +148,9 @@ class Server:
 
     def subprocess_request(self, message, client_address):
         """Handle request in a subprocess."""
-        # TODO: Send request to available subprocess or create a new subprocess
         available_server = self.available_partner()
-        if self.QUEUE_AVAILABLE_SERVERS == []:
-            process = self.create_subprocess()
-            return self.subprocess_request()
+        self.queue_unavailable_servers.append(available_server)
 
-        process = self.use(self.QUEUE_AVAILABLE_SERVERS[0])
-        if process.status == "unavailable":
-            self.QUEUE_AVAILABLE_SERVERS.remove(process)
-            self.QUEUE_UNAVAILABLE_SERVERS.append(process)
-            return self.subprocess_request(message, client_address)
-            """ 
-            Chamada Recursiva para evitar alteração na lista de processos disponíveis enquanto aconteça interação pelo for
-            """
-
-        t = threading.Thread(target=self.send_reponse_process, args=(process, message, client_address), kwargs={})
-        t.start()
-
-        raise NotImplementedError("Subprocess not implemented yet.")
+        response = self.request_to_partner(available_server, message)
+        response = str(response).encode("utf-8")
+        self.sock.sendto(response, client_address)

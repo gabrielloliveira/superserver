@@ -11,8 +11,7 @@ if __name__ == "__main__":
         type=int,
         action="store",
         help="Número de threads para o servidor.",
-        default=1,
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "-p",
@@ -30,5 +29,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    server = Server(num_threads=args.threads, is_subprocess=args.partner, port=args.port)
+    server = Server(**args.__dict__)
     server.run()

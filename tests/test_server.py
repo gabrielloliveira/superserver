@@ -12,12 +12,12 @@ def test_create_super_server():
     """
     Test creating a super server
     """
-    server = Server(num_threads=1)
+    server = Server(threads=1)
     server.close()
 
     assert server.host == "127.0.0.1"
     assert server.port == 8080
-    assert server.is_subprocess is False
+    assert server.partner is False
     assert server.num_threads == 1
     assert server.threads == 0
     assert server.sock is not None
@@ -31,7 +31,7 @@ def test_listen(mock_handle_request, mock_recvfrom):
     """
     Test listen
     """
-    server = Server(num_threads=1)
+    server = Server(threads=1)
     server.listen_udp()
     server.close()
     assert mock_recvfrom.called
@@ -44,7 +44,7 @@ def test_server_send_response(mock_send_response, mock_recvfrom):
     """
     Test send response
     """
-    server = Server(num_threads=1)
+    server = Server(threads=1)
     server.listen_udp()
     server.close()
     assert mock_recvfrom.called
@@ -89,8 +89,8 @@ def test_subprocess_initialization(mock_create_socket_tcp):
     """
     Test subprocess initialization
     """
-    server = Server(num_threads=1, is_subprocess=True)
-    assert server.is_subprocess is True
+    server = Server(threads=1, partner=True)
+    assert server.partner is True
     assert mock_create_socket_tcp.called
 
 
@@ -98,7 +98,7 @@ def test_subprocess_initialization_with_port():
     """
     Test subprocess initialization with port
     """
-    server = Server(num_threads=1, is_subprocess=True, port=8081)
+    server = Server(threads=1, partner=True, port=8081)
     server.close()
     assert server.port == 8081
     assert server.sock is not None
