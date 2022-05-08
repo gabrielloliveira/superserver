@@ -92,3 +92,15 @@ def test_subprocess_initialization(mock_create_socket_tcp):
     server = Server(num_threads=1, is_subprocess=True)
     assert server.is_subprocess is True
     assert mock_create_socket_tcp.called
+
+
+def test_subprocess_initialization_with_port():
+    """
+    Test subprocess initialization with port
+    """
+    server = Server(num_threads=1, is_subprocess=True, port=8081)
+    server.close()
+    assert server.port == 8081
+    assert server.sock is not None
+    assert server.sock.family == socket.AF_INET
+    assert server.sock.type == socket.SOCK_STREAM

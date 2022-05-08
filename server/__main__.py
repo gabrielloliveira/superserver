@@ -16,6 +16,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-p",
+        "--port",
+        help="Porta que o servidor irá escutar.",
+        action="store",
+        required=False,
+    )
+    parser.add_argument(
         "--partner",
         help="Inidica se o servidor é parceiro.",
         action="store_true",
@@ -24,5 +30,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    server = Server(num_threads=args.threads, is_subprocess=args.partner)
+    server = Server(num_threads=args.threads, is_subprocess=args.partner, port=args.port)
     server.run()

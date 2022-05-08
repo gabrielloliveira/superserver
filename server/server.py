@@ -11,9 +11,9 @@ BUFFER_SIZE = 1024 * 10
 
 
 class Server:
-    def __init__(self, num_threads: int, is_subprocess: bool = False):
-        self.host = HOST
-        self.port = PORT
+    def __init__(self, num_threads: int, is_subprocess: bool = False, host: str = HOST, port: int = PORT):
+        self.host = host
+        self.port = port
         self.is_subprocess = is_subprocess
         self.sock = self.create_sock()
         self.num_threads = num_threads
@@ -21,17 +21,14 @@ class Server:
         self.queue_available_servers = []
         self.queue_unavailable_servers = []
 
-    @classmethod
-    def create_subprocess(cls):
-        """Create a subprocess."""
-        subprocess.run(["python", "-m", "server", "-p"])
-
     def close(self):
         """Close the server."""
         self.sock.close()
 
     def run(self):
         """Run the server."""
+        if self.is_subprocess:
+            print("🚀 Starting server on mode subprocess...")
         print(f"🚀 Starting server on port {self.port}...")
         print(f"🚀 Number of threads = {self.num_threads}...")
         listen_type_connection = self.listen_udp
@@ -62,6 +59,13 @@ class Server:
 
     def available_port(self):
         """Get available port."""
+        try:
+            s = socket.socket()
+            s.bind((self.host, self.port))
+            s.close()
+            return self.port
+        except OSError:
+            pass
         initial = 8000
         final = 65535
         for port in range(initial, final):
@@ -112,23 +116,40 @@ class Server:
         t.start()
         self.threads += 1
 
-    def info_subprocess(self):
+    @staticmethod
+    def info_partner(port, threads):
         """Listen for info."""
-
-        process = {
-            "subprocess": info["port"],
+        info = {
+            "port": port,
             "performance_rate": 0,
-            "status": "available",
-            "thread_total": info["threads"],
+            "num_thread": threads,
             "thread_used": 0,
         }
+        return info
 
-        self.QUEUE_AVAILABLE_SERVERS.append(process)
-        self.QUEUE_AVAILABLE_SERVERS = sorted(self.QUEUE_AVAILABLE_SERVERS, key=lambda row: row["performance_rate"], reverse=1)
+    def insert_partner_in_queue(self, port, threads):
+        """Insert partner in queue."""
+        # TODO: Order by performance rate
+        info = self.info_partner(port, threads)
+        self.queue_available_servers.append(info)
+
+    def create_subprocess(self):
+        """Create a subprocess."""
+        available_port = self.available_port()
+        threads = 1
+        subprocess.run(["python", "-m", "server", "-t", str(threads), "-p", str(available_port), "--partner"])
+        self.insert_partner_in_queue(available_port, threads)
+
+    def available_partner(self):
+        """Get available partner."""
+        if not self.queue_available_servers:
+            self.create_subprocess()
+        return self.queue_available_servers.pop(0)
 
     def subprocess_request(self, message, client_address):
         """Handle request in a subprocess."""
         # TODO: Send request to available subprocess or create a new subprocess
+        available_server = self.available_partner()
         if self.QUEUE_AVAILABLE_SERVERS == []:
             process = self.create_subprocess()
             return self.subprocess_request()
