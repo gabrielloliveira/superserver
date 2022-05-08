@@ -31,20 +31,20 @@ def test_listen(mock_handle_request, mock_recvfrom):
     Test listen
     """
     server = Server(num_threads=1)
-    server.listen()
+    server.listen_udp()
     server.close()
     assert mock_recvfrom.called
     assert mock_handle_request.called
 
 
 @mock.patch("socket.socket.recvfrom", return_value=(b"test", ("123", 123)), autospec=True)
-@mock.patch("server.server.Server.send_response", return_value=None, autospec=True)
+@mock.patch("server.server.Server.send_response_thread", return_value=None, autospec=True)
 def test_server_send_response(mock_send_response, mock_recvfrom):
     """
     Test send response
     """
     server = Server(num_threads=1)
-    server.listen()
+    server.listen_udp()
     server.close()
     assert mock_recvfrom.called
     assert len(mock_send_response.call_args.args) == 3
