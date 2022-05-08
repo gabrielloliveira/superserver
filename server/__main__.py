@@ -1,4 +1,5 @@
 import argparse
+import random
 
 from .server import Server
 
@@ -18,6 +19,7 @@ if __name__ == "__main__":
         "--port",
         help="Porta que o servidor irá escutar.",
         action="store",
+        type=int,
         required=False,
     )
     parser.add_argument(
@@ -29,5 +31,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    server = Server(**args.__dict__)
+    data = args.__dict__.copy()
+    data["threads"] = data["threads"] if data["threads"] else random.randint(1, 4)
+    if not data["port"]:
+        del data["port"]
+
+    server = Server(**data)
     server.run()
