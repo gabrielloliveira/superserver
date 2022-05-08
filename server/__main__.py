@@ -14,6 +14,7 @@ if __name__ == "__main__":
         action="store",
         help="Número de threads para o servidor.",
         required=False,
+        default=0,
     )
     parser.add_argument(
         "-p",
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data = args.__dict__.copy()
-    data["threads"] = data["threads"] if data["threads"] else random.randint(1, 4)
+
     if not data["port"]:
         del data["port"]
 
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     del data["partner"]
 
     if partner:
+        data["threads"] = random.randint(1, 4)
         server = PartnerServer(**data)
     else:
         server = Server(**data)

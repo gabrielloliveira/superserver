@@ -120,15 +120,19 @@ class Server(BaseServer):
         available_server = self.available_partner()
         self.queue_unavailable_servers.append(available_server)
 
+        print(f"📪 Sending {message} to available partner on PORT {available_server['port']} ...")
+
         response = self.request_to_partner(available_server, message)
+        print(f"📩 Sending response to client ...")
         self.sock.sendto(response, client_address)
 
     def request_to_partner(self, available_server, message):
         """Send request to partner."""
-        port = available_server["port"]
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, port))
-        s.send(message)
-        response = s.recv(BUFFER_SIZE)
-        s.close()
+        print(f"📩 Sending message with TCP CONNECTION to partner at port {available_server['port']}")
+        message = message.encode("utf-8")
+        server = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+        server.connect((self.host, available_server["port"]))
+        server.send(message)
+        response = server.recv(BUFFER_SIZE)
+        print(f"📨 Received from partner response: {response.decode('utf-8')}")
         return response
