@@ -84,13 +84,11 @@ def test_calculate_product():
     assert len(result_mult) == 2
 
 
-@mock.patch("server.server.Server.listen_tcp", return_value=None, autospec=True)
-def test_subprocess_initialization(mock_listen_tcp):
+@mock.patch("server.server.Server.create_socket_tcp", return_value=None, autospec=True)
+def test_subprocess_initialization(mock_create_socket_tcp):
     """
     Test subprocess initialization
     """
     server = Server(num_threads=1, is_subprocess=True)
-    server.run()
-    server.close()
     assert server.is_subprocess is True
-    assert mock_listen_tcp.called
+    assert mock_create_socket_tcp.called

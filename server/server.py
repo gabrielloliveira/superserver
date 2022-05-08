@@ -21,6 +21,11 @@ class Server:
         self.queue_available_servers = []
         self.queue_unavailable_servers = []
 
+    @classmethod
+    def create_subprocess(cls):
+        """Create a subprocess."""
+        subprocess.run(["python", "-m", "server", "-p"])
+
     def close(self):
         """Close the server."""
         self.sock.close()
@@ -29,11 +34,11 @@ class Server:
         """Run the server."""
         print(f"🚀 Starting server on port {self.port}...")
         print(f"🚀 Number of threads = {self.num_threads}...")
+        listen_type_connection = self.listen_udp
         if self.is_subprocess:
-            self.listen_tcp()
-        else:
-            while True:
-                self.listen_udp()
+            listen_type_connection = self.listen_tcp
+        while True:
+            listen_type_connection()
 
     def create_sock(self):
         """Create a socket."""
@@ -104,11 +109,6 @@ class Server:
         t = threading.Thread(target=self.send_response_thread, args=(message, client_address), kwargs={"from_thread": True})
         t.start()
         self.threads += 1
-
-    @classmethod
-    def create_subprocess(cls):
-        """Create a subprocess."""
-        subprocess.run(["python", "-m", "server", "-p"])
 
     def info_subprocess(self):
         """Listen for info."""
