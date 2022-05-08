@@ -90,14 +90,16 @@ class Server:
         if self.threads < self.num_threads:
             self.thread_request(message, client_address)
         else:
-            if not self.is_subprocess:
-                self.subprocess_request(message, client_address)
+            self.subprocess_request(message, client_address)
 
     def send_response_thread(self, message, client_address, from_thread=False):
         """Send a response to the client."""
 
-        matrices = matrices_from_message(message)
-        product = calculate_product(matrices)
+        try:
+            matrices = matrices_from_message(message)
+            product = calculate_product(matrices)
+        except ValueError as e:
+            product = f"The matrices is not valid."
 
         response = str(product).encode("utf-8")
         self.sock.sendto(response, client_address)
