@@ -25,35 +25,6 @@ def test_create_super_server():
     assert server.sock.type == socket.SOCK_DGRAM
 
 
-@mock.patch("socket.socket.recvfrom", return_value=(b"test", ("123", 123)), autospec=True)
-@mock.patch("server.server.Server.handle_request", return_value=None, autospec=True)
-def test_listen(mock_handle_request, mock_recvfrom):
-    """
-    Test listen
-    """
-    server = Server(threads=1)
-    server.listen_udp()
-    server.close()
-    assert mock_recvfrom.called
-    assert mock_handle_request.called
-
-
-@mock.patch("socket.socket.recvfrom", return_value=(b"test", ("123", 123)), autospec=True)
-@mock.patch("server.server.Server.send_response_thread", return_value=None, autospec=True)
-def test_server_send_response(mock_send_response, mock_recvfrom):
-    """
-    Test send response
-    """
-    server = Server(threads=1)
-    server.listen_udp()
-    server.close()
-    assert mock_recvfrom.called
-    assert len(mock_send_response.call_args.args) == 3
-    assert mock_send_response.call_args.args[1] is b"test"
-    assert mock_send_response.call_args.args[2] == ("123", 123)
-    assert mock_send_response.call_args.kwargs["from_thread"] is True
-
-
 @pytest.mark.parametrize(
     "message, expected_matrix",
     [
