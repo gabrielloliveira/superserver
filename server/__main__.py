@@ -1,6 +1,7 @@
 import argparse
 import random
 
+from server.partner import PartnerServer
 from .server import Server
 
 if __name__ == "__main__":
@@ -36,5 +37,11 @@ if __name__ == "__main__":
     if not data["port"]:
         del data["port"]
 
-    server = Server(**data)
+    partner = data["partner"]
+    del data["partner"]
+
+    if partner:
+        server = PartnerServer(**data)
+    else:
+        server = Server(**data)
     server.run()
