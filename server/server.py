@@ -1,11 +1,8 @@
-import os
-import random
 import socket
+import subprocess
 import threading
-from ast import literal_eval
-from functools import reduce
 
-import numpy as np
+from server.helpers import calculate_product, matrices_from_message
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -21,8 +18,8 @@ class Server:
         self.sock = self.create_sock()
         self.num_threads = num_threads
         self.threads = 0
-        self.QUEUE_AVAILABLE_SERVERS = []
-        self.QUEUE_UNAVAILABLE_SERVERS = []
+        self.queue_available_servers = []
+        self.queue_unavailable_servers = []
 
     def close(self):
         """Close the server."""
@@ -91,26 +88,11 @@ class Server:
             if not self.is_subprocess:
                 self.subprocess_request(message, client_address)
 
-    @staticmethod
-    def matrices(message):
-        """Get matrices from message."""
-        if isinstance(message, bytes):
-            message = message.decode("utf-8")
-        matrices = message.lower().split("x")
-        matrices = [literal_eval(m.strip()) for m in matrices]
-        return matrices
-
-    @staticmethod
-    def calculate_product(matrices):
-        """Calculate product of matrices."""
-        return reduce(np.dot, matrices)
-
     def send_response_thread(self, message, client_address, from_thread=False):
         """Send a response to the client."""
-        # TODO: Calculate product from matrix
 
-        matrices = self.matrices(message)
-        product = self.calculate_product(matrices)
+        matrices = matrices_from_message(message)
+        product = calculate_product(matrices)
 
         response = str(product).encode("utf-8")
         self.sock.sendto(response, client_address)
@@ -123,9 +105,10 @@ class Server:
         t.start()
         self.threads += 1
 
-    def create_subprocess(self):
+    @classmethod
+    def create_subprocess(cls):
         """Create a subprocess."""
-        os.system("python3 -m server True")
+        subprocess.run(["python", "-m", "server", "-p"])
 
     def info_subprocess(self):
         """Listen for info."""

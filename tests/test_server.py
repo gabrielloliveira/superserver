@@ -4,6 +4,7 @@ from unittest import mock
 import numpy as np
 import pytest
 
+from server.helpers import calculate_product, matrices_from_message
 from server.server import Server
 
 
@@ -64,9 +65,7 @@ def test_matrices(message, expected_matrix):
     """
     Test matrices
     """
-    server = Server(num_threads=1)
-    matrices = server.matrices(message)
-    server.close()
+    matrices = matrices_from_message(message)
     assert isinstance(matrices, list)
     assert len(matrices) == 2
     assert matrices[0] == expected_matrix
@@ -80,9 +79,7 @@ def test_calculate_product():
     matrices = [[[2, 3], [3, 4]], [[5, 6], [6, 7]], [[2, 3], [3, 4]]]
     expected_result_mult = [[155, 216], [216, 301]]
 
-    server = Server(num_threads=1)
-    result_mult = server.calculate_product(matrices)
-    server.close()
+    result_mult = calculate_product(matrices)
     np.testing.assert_array_equal(result_mult, expected_result_mult)
     assert len(result_mult) == 2
 
