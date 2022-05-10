@@ -4,7 +4,17 @@ import random
 from server.partner import PartnerServer
 from .client import Client
 
-if __name__ == "__main__":
+
+def execute():
     client = Client()
     menssage_random = client.gerate_random_message()
-    client.send_message(menssage_random)
+
+    while True:
+        try:
+            client.send_message(menssage_random)
+        except:
+            execute()
+
+
+if __name__ == "__main__":
+    execute()

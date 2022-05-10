@@ -2,7 +2,7 @@ import random
 import socket
 import time
 
-SERVER_ADDRESS = ("127.0.0.1", 8080)
+SERVER_ADDRESS = ("superserver", 8080)
 BUFFER_SIZE = 1024 * 10
 
 
@@ -15,6 +15,7 @@ class Client:
         start_time = time.time()
         message = message.encode("utf-8")
         server = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        server.settimeout(5)
         server.sendto(message, self.server_address)
         response = server.recvfrom(BUFFER_SIZE)
         message = response[0].decode("utf-8")

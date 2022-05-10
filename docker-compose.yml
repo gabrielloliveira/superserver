@@ -1,0 +1,191 @@
+version: "3.3"
+networks:
+  network:
+    external: true
+
+
+services:
+  superserver:
+    container_name: "superserver"
+    build: .
+    restart: always
+    command:
+      - ./entrypoint.sh
+    volumes:
+      - .:/server:delegated
+#    ports:
+#      - "8080:8080"
+    networks:
+      - network
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "4096M"
+
+  client_1:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_2:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_3:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_4:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_5:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_6:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+  client_7:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_8:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+
+  client_9:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
+
+  client_10:
+    build: .
+    restart: always
+    volumes:
+      - .:/server:delegated
+    command: ./entrypoint-client.sh
+    networks:
+      - network
+    depends_on:
+      - superserver
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1024M"
