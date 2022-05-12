@@ -33,14 +33,11 @@ class Client:
         print(f"📨 Received response: {message}")
 
     def gerate_random_message(self):
-        l_c = random.randint(5, 20)
-        num_1 = random.randint(0, 9)
-        num_2 = random.randint(0, 9)
-        matriz_1 = [[num_1] * l_c, [num_2] * l_c] * l_c
-
-        num_1 = random.randint(0, 9)
-        num_2 = random.randint(0, 9)
-        matriz_2 = [[num_1] * l_c, [num_2] * l_c] * l_c
+        l_c = random.randint(5, 10)
+        num_1 = random.randint(1, 9)
+        num_2 = random.randint(1, 9)
+        matriz_1 = [[num_1] * l_c] * l_c
+        matriz_2 = [[num_2] * l_c] * l_c
 
         message = f"{matriz_1} x {matriz_2}"
         return message
